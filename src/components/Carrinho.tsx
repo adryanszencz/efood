@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 
 import { BotaoClaro } from './PratoCard'
+import Checkout from './Checkout'
 import { cores } from '../styles'
 import { RootReducer } from '../store'
 import { fechar, remover } from '../store/reducers/carrinho'
@@ -83,6 +85,8 @@ const Vazio = styled.p`
 const Carrinho = () => {
   const dispatch = useDispatch()
   const { itens, estaAberto } = useSelector((state: RootReducer) => state.carrinho)
+  // depois de "Continuar com a entrega" o carrinho vira o checkout (entrega, pagamento e confirmação)
+  const [emCheckout, setEmCheckout] = useState(false)
 
   if (!estaAberto) return null
 
@@ -92,7 +96,9 @@ const Carrinho = () => {
   return (
     <Overlay onClick={() => dispatch(fechar())}>
       <Sidebar onClick={(e) => e.stopPropagation()} aria-label="Carrinho">
-        {itens.length === 0 ? (
+        {emCheckout ? (
+          <Checkout itens={itens} valorTotal={valorTotal} aoVoltar={() => setEmCheckout(false)} />
+        ) : itens.length === 0 ? (
           <Vazio>O carrinho está vazio. Adicione um prato para continuar.</Vazio>
         ) : (
           <>
@@ -116,7 +122,9 @@ const Carrinho = () => {
               <span>Valor total</span>
               <span>{formataPreco(valorTotal)}</span>
             </Total>
-            <BotaoClaro type="button">Continuar com a entrega</BotaoClaro>
+            <BotaoClaro type="button" onClick={() => setEmCheckout(true)}>
+              Continuar com a entrega
+            </BotaoClaro>
           </>
         )}
       </Sidebar>
